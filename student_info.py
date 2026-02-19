@@ -45,7 +45,7 @@ class StudentInfo:
                 dept CHAR(50))
             """
             )
-            print("--- Table created successfully. ---")
+            print("\n--- Table created successfully. ---")
         except Exception as e:
             print(f"Error: {e}")
 
@@ -61,7 +61,7 @@ class StudentInfo:
         ]
         cursor.executemany(sql, val)
         conn.commit()
-        print(f"--- {cursor.rowcount} data inserted into table. ---")
+        print(f"\n--- {cursor.rowcount} data inserted into table. ---")
 
     # fetch and print records
     @staticmethod
@@ -78,7 +78,7 @@ class StudentInfo:
         val = ("YUVRAJ", "yuvraj@example.com", "ABHISHEK", "abhishek@example.com")
         cursor.execute(sql, val)
         conn.commit()
-        print(f"--- {cursor.rowcount} row's updated. ---")
+        print(f"\n--- {cursor.rowcount} row's updated. ---")
 
     # delete the data
     @staticmethod
@@ -86,7 +86,7 @@ class StudentInfo:
         sql = "DELETE FROM students WHERE name = 'SACHIN'"
         cursor.execute(sql)
         conn.commit()
-        print(f"--- {cursor.rowcount} data deleted. ---")
+        print(f"\n--- {cursor.rowcount} data deleted. ---")
 
 
 def main():
@@ -101,7 +101,7 @@ def main():
     StudentInfo.delete_table()
     StudentInfo.read_table()
 
-    print(f"--- Total: {cursor.rowcount} data rows available. ---")
+    print(f"\n--- Total: {cursor.rowcount} data rows available. ---\n")
 
 
 if __name__ == "__main__":
