@@ -1,5 +1,5 @@
-from classes.Student import Student
-from classes.Config import Config
+from classes.student import Student
+from classes.config import Config
 import mysql.connector
 import sys
 import os
