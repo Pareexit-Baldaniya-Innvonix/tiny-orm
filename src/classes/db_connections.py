@@ -2,8 +2,9 @@ import mysql.connector
 from settings import db_settings
 
 
-# manage the connection settings using config file/.env variables
-class Config:
+# manage the connection settings using credentials loaded from settings
+class DBConnection:
+
     @staticmethod
     def get_connection():
         return mysql.connector.connect(
