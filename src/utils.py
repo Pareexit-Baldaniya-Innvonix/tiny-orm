@@ -1,8 +1,10 @@
 import mysql.connector
 from settings import db_settings
+from typing import Optional
+from mysql.connector.connection import MySQLConnection
 
 
-def get_db_connection():
+def get_db_connection() -> Optional[MySQLConnection]:
     try:
         connection = mysql.connector.connect(
             host=db_settings.DB_HOST,

@@ -1,5 +1,8 @@
 import sys
 from pathlib import Path
+from typing import List, Optional
+from mysql.connector.connection import MySQLConnection
+from mysql.connector.cursor import MySQLCursor
 
 # parent of src/ is on the python path so all modules can be imported correctly from the classes/ sub-package
 ROOT_DIR = Path(__file__).parent
@@ -11,23 +14,27 @@ from classes.Student import Student
 from utils import get_db_connection
 
 
-def main():
-    students = [
+def main() -> None:
+    students: List[Student] = [
         Student(name="ROHIT", email="rohit@example.com", dept="CE"),
         Student(name="VIRAT", email="virat@example.com", dept="ME"),
         Student(name="SACHIN", email="sachin@example.com", dept="IT"),
         Student(name="ABHISHEK", email="abhishek@example.com", dept="EC"),
     ]
 
-    old_student = Student(name="ABHISHEK", email="abhishek@example.com", dept="EC")
-    new_student = Student(name="YUVRAJ", email="yuvraj@example.com", dept="EC")
-    delete_student = Student(name="SACHIN", email="sachin@example.com", dept="IT")
+    old_student: Student = Student(
+        name="ABHISHEK", email="abhishek@example.com", dept="EC"
+    )
+    new_student: Student = Student(name="YUVRAJ", email="yuvraj@example.com", dept="EC")
+    delete_student: Student = Student(
+        name="SACHIN", email="sachin@example.com", dept="IT"
+    )
 
-    conn = get_db_connection()
+    conn: Optional[MySQLConnection] = get_db_connection()
     if not conn:
         return
 
-    cursor = conn.cursor()
+    cursor: MySQLCursor = conn.cursor()
 
     # create table
     try:
@@ -40,7 +47,7 @@ def main():
     try:
         StudentInfo.insert_table(cursor, conn, students)
         print("\n-> Initial Data:")
-        all_students = StudentInfo.read_table(cursor)
+        all_students: List[Student] = StudentInfo.read_table(cursor)
         for s in all_students:
             print(f"Student: {s.name}| Dept: {s.dept} | Email: {s.email} ")
 
@@ -51,7 +58,7 @@ def main():
     try:
         StudentInfo.update_table(cursor, conn, new_student, old_student)
         print("\n-> Updated Data:")
-        all_students = StudentInfo.read_table(cursor)
+        all_students: List[Student] = StudentInfo.read_table(cursor)
         for s in all_students:
             print(f"Student: {s.name}| Dept: {s.dept} | Email: {s.email} ")
 
@@ -62,7 +69,7 @@ def main():
     try:
         StudentInfo.delete_table(cursor, conn, delete_student)
         print("\n-> Final Data:")
-        all_students = StudentInfo.read_table(cursor)
+        all_students: List[Student] = StudentInfo.read_table(cursor)
         for s in all_students:
             print(f"Student: {s.name}| Dept: {s.dept} | Email: {s.email} ")
 

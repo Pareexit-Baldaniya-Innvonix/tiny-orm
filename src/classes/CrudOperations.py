@@ -1,5 +1,7 @@
 import mysql.connector
-from classes.Student import Student
+from Student import Student
+from mysql.connector.cursor import MySQLCursor
+from mysql.connector.abstracts import MySQLConnectionAbstract
 
 
 # CRUD operations
@@ -7,7 +9,7 @@ class StudentInfo:
 
     # create students table
     @staticmethod
-    def create_table(cursor):
+    def create_table(cursor: MySQLCursor) -> None:
         try:
             cursor.execute(
                 """
@@ -24,21 +26,25 @@ class StudentInfo:
 
     # add multiple records
     @staticmethod
-    def insert_table(cursor, conn, students: list[Student]):
-        sql = "INSERT INTO students(name, email, dept) VALUES (%s, %s, %s)"
-        val = [(s.name, s.email, s.dept) for s in students]
+    def insert_table(
+        cursor: MySQLCursor, conn: MySQLConnectionAbstract, students: list[Student]
+    ) -> None:
+        sql: str = "INSERT INTO students(name, email, dept) VALUES (%s, %s, %s)"
+        val: list[tuple[str, str, str]] = [(s.name, s.email, s.dept) for s in students]
         cursor.executemany(sql, val)
         conn.commit()
         print(f"\n--- {cursor.rowcount} data inserted into table. ---")
 
     # fetch and print records
     @staticmethod
-    def read_table(cursor):
-        query = "SELECT name, email, dept FROM students"
+    def read_table(cursor: MySQLCursor) -> list[Student]:
+        query: str = "SELECT name, email, dept FROM students"
         try:
             cursor.execute(query)
             rows = cursor.fetchall()
-            students = [Student(name=row[0], email=row[1], dept=row[2]) for row in rows]
+            students: list[Student] = [
+                Student(name=row[0], email=row[1], dept=row[2]) for row in rows
+            ]
             return students
 
         except Exception as e:
@@ -47,9 +53,16 @@ class StudentInfo:
 
     # update the data
     @staticmethod
-    def update_table(cursor, conn, new_student: Student, old_student: Student):
-        sql = "UPDATE students SET name = %s, email = %s, dept = %s WHERE name = %s AND email = %s"
-        val = (
+    def update_table(
+        cursor: MySQLCursor,
+        conn: MySQLConnectionAbstract,
+        new_student: Student,
+        old_student: Student,
+    ) -> None:
+        sql: str = (
+            "UPDATE students SET name = %s, email = %s, dept = %s WHERE name = %s AND email = %s"
+        )
+        val: tuple[str, str, str, str, str] = (
             new_student.name,
             new_student.email,
             new_student.dept,
@@ -62,8 +75,12 @@ class StudentInfo:
 
     # delete the data
     @staticmethod
-    def delete_table(cursor, conn, student: Student):
-        sql = "DELETE FROM students WHERE name = %s AND email = %s"
+    def delete_table(
+        cursor: MySQLCursor, conn: MySQLConnectionAbstract, student: Student
+    ) -> None:
+        sql: str = "DELETE FROM students WHERE name = %s AND email = %s"
+        params: tuple[str, str] = (student.name, student.email)
         cursor.execute(sql, (student.name, student.email))
+        cursor.execute(sql, params)
         conn.commit()
         print(f"\n--- {cursor.rowcount} data deleted. ---")
