@@ -65,7 +65,13 @@ class StudentInfo:
     def update_table(new_student: Student, old_student: Student):
         cursor, conn = StudentInfo.get_cursor()
         sql = "UPDATE students SET name = %s, email = %s, dept = %s WHERE name = %s AND email = %s"
-        val = (new_student.name, new_student.email, new_student.dept, old_student.name, old_student.email)
+        val = (
+            new_student.name,
+            new_student.email,
+            new_student.dept,
+            old_student.name,
+            old_student.email,
+        )
         cursor.execute(sql, val)
         conn.commit()
         print(f"\n--- {cursor.rowcount} row's updated. ---")
