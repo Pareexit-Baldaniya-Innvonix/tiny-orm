@@ -8,6 +8,7 @@ if str(ROOT_DIR) not in sys.path:
 
 from classes.CrudOperations import StudentInfo
 from classes.Student import Student
+from utils import get_db_connection
 
 
 def main():
@@ -22,39 +23,56 @@ def main():
     new_student = Student(name="YUVRAJ", email="yuvraj@example.com", dept="EC")
     delete_student = Student(name="SACHIN", email="sachin@example.com", dept="IT")
 
+    conn = get_db_connection()
+    if not conn:
+        return
+
+    cursor = conn.cursor()
+
     # create table
     try:
-        StudentInfo.create_table()
+        StudentInfo.create_table(cursor)
+
     except Exception as e:
         print(f"Error creating a table: {e}")
 
     # insert data into table
     try:
-        StudentInfo.insert_table(students)
-        print("\nInitial Data:")
-        StudentInfo.read_table()
+        StudentInfo.insert_table(cursor, conn, students)
+        print("\n-> Initial Data:")
+        all_students = StudentInfo.read_table(cursor)
+        for s in all_students:
+            print(f"Student: {s.name}| Dept: {s.dept} | Email: {s.email} ")
+
     except Exception as e:
         print(f"Error during inserting data: {e}")
 
     # update table data
     try:
-        StudentInfo.update_table(new_student, old_student)
-        print("\nUpdated Data:")
-        StudentInfo.read_table()
+        StudentInfo.update_table(cursor, conn, new_student, old_student)
+        print("\n-> Updated Data:")
+        all_students = StudentInfo.read_table(cursor)
+        for s in all_students:
+            print(f"Student: {s.name}| Dept: {s.dept} | Email: {s.email} ")
+
     except Exception as e:
         print(f"Error updating table data: {e}")
 
     # delete data from table
     try:
-        StudentInfo.delete_table(delete_student)
-        print("\nFinal Data:")
-        StudentInfo.read_table()
+        StudentInfo.delete_table(cursor, conn, delete_student)
+        print("\n-> Final Data:")
+        all_students = StudentInfo.read_table(cursor)
+        for s in all_students:
+            print(f"Student: {s.name}| Dept: {s.dept} | Email: {s.email} ")
+
     except Exception as e:
         print(f"Error deleting table data: {e}")
 
+    cursor.close()
+    conn.close()
+    print("\n--- Connection closed successfully. ---")
+
 
 if __name__ == "__main__":
-    try:
-        main()
-    finally:
-        StudentInfo.close_connection()  # destructor used to close corsor and connection
+    main()
