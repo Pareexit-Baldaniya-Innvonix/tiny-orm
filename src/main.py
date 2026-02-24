@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 # parent of src/ is on the python path so all modules can be imported correctly from the classes/ sub-package
-ROOT_DIR = Path(__file__).parent.parent
+ROOT_DIR = Path(__file__).parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
