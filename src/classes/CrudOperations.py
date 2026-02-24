@@ -3,7 +3,7 @@ import mysql.connector
 from mysql.connector.abstracts import MySQLConnectionAbstract
 
 # local import
-from Student import Student
+from .Student import Student
 
 
 # CRUD operations
