@@ -1,14 +1,16 @@
 import sys
 from pathlib import Path
-from typing import List, Optional
-from mysql.connector.connection import MySQLConnection
-from mysql.connector.cursor import MySQLCursor
 
 # parent of src/ is on the python path so all modules can be imported correctly from the classes/ sub-package
-ROOT_DIR = Path(__file__).parent
+ROOT_DIR: Path = Path(__file__).parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
+# library import
+from typing import List, Optional
+from mysql.connector.connection import MySQLConnection
+
+# local import
 from classes.CrudOperations import StudentInfo
 from classes.Student import Student
 from utils import get_db_connection
@@ -34,20 +36,18 @@ def main() -> None:
     if not conn:
         return
 
-    cursor: MySQLCursor = conn.cursor()
-
     # create table
     try:
-        StudentInfo.create_table(cursor)
+        StudentInfo.create_table(conn)
 
     except Exception as e:
         print(f"Error creating a table: {e}")
 
     # insert data into table
     try:
-        StudentInfo.insert_table(cursor, conn, students)
+        StudentInfo.insert_table(conn, students)
         print("\n-> Initial Data:")
-        all_students: List[Student] = StudentInfo.read_table(cursor)
+        all_students: List[Student] = StudentInfo.read_table(conn)
         for s in all_students:
             print(f"Student: {s.name}| Dept: {s.dept} | Email: {s.email} ")
 
@@ -56,9 +56,9 @@ def main() -> None:
 
     # update table data
     try:
-        StudentInfo.update_table(cursor, conn, new_student, old_student)
+        StudentInfo.update_table(conn, new_student, old_student)
         print("\n-> Updated Data:")
-        all_students: List[Student] = StudentInfo.read_table(cursor)
+        all_students: List[Student] = StudentInfo.read_table(conn)
         for s in all_students:
             print(f"Student: {s.name}| Dept: {s.dept} | Email: {s.email} ")
 
@@ -67,16 +67,15 @@ def main() -> None:
 
     # delete data from table
     try:
-        StudentInfo.delete_table(cursor, conn, delete_student)
+        StudentInfo.delete_table(conn, delete_student)
         print("\n-> Final Data:")
-        all_students: List[Student] = StudentInfo.read_table(cursor)
+        all_students: List[Student] = StudentInfo.read_table(conn)
         for s in all_students:
             print(f"Student: {s.name}| Dept: {s.dept} | Email: {s.email} ")
 
     except Exception as e:
         print(f"Error deleting table data: {e}")
 
-    cursor.close()
     conn.close()
     print("\n--- Connection closed successfully. ---")
 
