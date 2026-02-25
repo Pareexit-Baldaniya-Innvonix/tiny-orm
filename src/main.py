@@ -24,14 +24,6 @@ def main() -> None:
         Student(name="ABHISHEK", email="abhishek@example.com", dept="EC"),
     ]
 
-    old_student: Student = Student(
-        name="ABHISHEK", email="abhishek@example.com", dept="EC"
-    )
-    new_student: Student = Student(name="YUVRAJ", email="yuvraj@example.com", dept="EC")
-    delete_student: Student = Student(
-        name="SACHIN", email="sachin@example.com", dept="IT"
-    )
-
     conn: Optional[MySQLConnection] = get_db_connection()
     if not conn:
         return
@@ -46,32 +38,46 @@ def main() -> None:
     # insert data into table
     try:
         StudentInfo.insert_table(conn, students)
+
         print("\n-> Initial Data:")
         all_students: List[Student] = StudentInfo.read_table(conn)
         for s in all_students:
-            print(f"Student: {s.name}| Dept: {s.dept} | Email: {s.email} ")
+            print(f"ID: {s.id}, Name: {s.name}| Dept: {s.dept} | Email: {s.email} ")
 
     except Exception as e:
         print(f"Error during inserting data: {e}")
 
     # update table data
     try:
-        StudentInfo.update_table(conn, new_student, old_student)
+        target_update = next((s for s in all_students if s.name == "ABHISHEK"), None)
+        if target_update:
+            # Create a new student object and keep the same ID
+            updated_info = Student(
+                id=target_update.id,
+                name="YUVRAJ",
+                email="yuvraj@example.com",
+                dept="EC",
+            )
+            StudentInfo.update_table(conn, updated_info)
+
         print("\n-> Updated Data:")
         all_students: List[Student] = StudentInfo.read_table(conn)
         for s in all_students:
-            print(f"Student: {s.name}| Dept: {s.dept} | Email: {s.email} ")
+            print(f"ID: {s.id}, Name: {s.name}| Dept: {s.dept} | Email: {s.email} ")
 
     except Exception as e:
         print(f"Error updating table data: {e}")
 
     # delete data from table
     try:
-        StudentInfo.delete_table(conn, delete_student)
+        target_delete = next((s for s in all_students if s.name == "SACHIN"), None)
+        if target_delete:
+            StudentInfo.delete_table(conn, target_delete)
+
         print("\n-> Final Data:")
         all_students: List[Student] = StudentInfo.read_table(conn)
         for s in all_students:
-            print(f"Student: {s.name}| Dept: {s.dept} | Email: {s.email} ")
+            print(f"ID: {s.id}, Name: {s.name}| Dept: {s.dept} | Email: {s.email} ")
 
     except Exception as e:
         print(f"Error deleting table data: {e}")

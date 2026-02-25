@@ -43,12 +43,13 @@ class StudentInfo:
     @staticmethod
     def read_table(conn: MySQLConnectionAbstract) -> list[Student]:
         with conn.cursor() as cursor:
-            query: str = "SELECT name, email, dept FROM students"
+            query: str = "SELECT id, name, email, dept FROM students"
             try:
                 cursor.execute(query)
                 rows = cursor.fetchall()
                 students: list[Student] = [
-                    Student(name=row[0], email=row[1], dept=row[2]) for row in rows
+                    Student(id=row[0], name=row[1], email=row[2], dept=row[3])
+                    for row in rows
                 ]
                 return students
 
@@ -58,21 +59,16 @@ class StudentInfo:
 
     # update the data
     @staticmethod
-    def update_table(
-        conn: MySQLConnectionAbstract,
-        new_student: Student,
-        old_student: Student,
-    ) -> None:
+    def update_table(conn: MySQLConnectionAbstract, student: Student) -> None:
         with conn.cursor() as cursor:
             sql: str = (
-                "UPDATE students SET name = %s, email = %s, dept = %s WHERE name = %s AND email = %s"
+                "UPDATE students SET name = %s, email = %s, dept = %s WHERE id = %s"
             )
             val: tuple[str, str, str, str, str] = (
-                new_student.name,
-                new_student.email,
-                new_student.dept,
-                old_student.name,
-                old_student.email,
+                student.name,
+                student.email,
+                student.dept,
+                student.id,
             )
             cursor.execute(sql, val)
             conn.commit()
@@ -82,8 +78,8 @@ class StudentInfo:
     @staticmethod
     def delete_table(conn: MySQLConnectionAbstract, student: Student) -> None:
         with conn.cursor() as cursor:
-            sql: str = "DELETE FROM students WHERE name = %s AND email = %s"
-            params: tuple[str, str] = (student.name, student.email)
+            sql: str = "DELETE FROM students WHERE id = %s"
+            params = (student.id,)
             cursor.execute(sql, params)
             conn.commit()
             print(f"\n--- {cursor.rowcount} data deleted. ---")
