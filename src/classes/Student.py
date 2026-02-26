@@ -66,17 +66,26 @@ class Student(BaseModel):
     # ----- finding all records -----
     @staticmethod
     def find_all(
-        conn: MySQLConnectionAbstract, criteria: Optional[dict] = None
+        conn: MySQLConnectionAbstract,
+        criteria: Optional[dict] = None,
+        order_by: Optional[str] = "name",
+        direction: str = "ASC",
+        limit: Optional[int] = None,
     ) -> list["Student"]:
         with conn.cursor() as cursor:
             try:
-                query = "SELECT id, name, email, dept FROM students"
+                query = f"SELECT id, name, email, dept FROM students"
                 values = []
 
                 if criteria:
                     conditions = [f"{key} = %s" for key in criteria.keys()]
                     query += " WHERE " + " AND ".join(conditions)
                     values = list(criteria.values())
+
+                query += f" ORDER BY {order_by} {direction} "
+
+                if limit is not None:
+                    query += f" LIMIT {limit}"
 
                 cursor.execute(query, values)
                 rows = cursor.fetchall()
@@ -93,14 +102,19 @@ class Student(BaseModel):
     # ----- finding one record -----
     @staticmethod
     def find_one(
-        conn: MySQLConnectionAbstract, criteria: dict[str, any]
+        conn: MySQLConnectionAbstract,
+        criteria: dict[str, any],
+        order_by: Optional[str] = None,
+        direction: str = "ASC",
     ) -> Optional["Student"]:
         with conn.cursor() as cursor:
             try:
-                columns = " AND ".join([f"{key} = %s" for key in criteria.keys()])
+                conditions = " AND ".join([f"{key} = %s" for key in criteria.keys()])
                 values = tuple(criteria.values())
 
-                sql = f"SELECT id, name, email, dept FROM students WHERE {columns}"
+                order = f" ORDER BY {order_by} {direction} " if order_by else ""
+                sql = f"SELECT id, name, email, dept FROM students WHERE {conditions} {order} LIMIT 1"
+
                 cursor.execute(sql, values)
                 row = cursor.fetchone()
 
