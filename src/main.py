@@ -32,23 +32,35 @@ def main() -> None:
             Student(name="ABHISHEK", email="abhishek@example.com", dept="EC"),
         ]
         for s in students:
-            s.save_data(conn)  # Using save_data instance method
+            s.save(conn)  # Using save instance method
 
         # ----- finding all data from table -----
-        print(f"\n-> Current data in database table:")
         all_students = Student.find_all(conn)
-        for s in all_students:
-            print(f"ID: {s.id} | Name: {s.name} | Email: {s.email} | Dept: {s.dept}")
+        print(f"Total students: {len(all_students)}")
+
+        # ----- Filter by Department -----
+        print("\n-> Searching students in the EC Department:")
+        ec_students = Student.find_all(conn, criteria={"dept": "EC"})
+        for s in ec_students:
+            print(f"ID: {s.id} | {s.name} ({s.email})")
+
+        # ----- Filter by Multiple Criteria (Name and Dept) -----
+        print("\n-> Searching for Rohit in CE:")
+        specific_student = Student.find_all(
+            conn, criteria={"name": "ROHIT", "dept": "CE"}
+        )
+        for s in specific_student:
+            print(f"ID: {s.id} | Name: {s.name}")
 
         # ----- update table data -----
         target_id = next((s.id for s in all_students if s.name == "ABHISHEK"), None)
         if target_id:
-            student = Student.find_one(conn, target_id)
+            student = Student.find_one(conn, {"id": target_id})
             if student:
                 student.name = "YUVRAJ"
                 student.email = "yuvraj@example.com"
                 student.dept = "AIML"
-                student.save_data(conn)
+                student.save(conn)
                 print(
                     f"\n--- Updated student to: Name: {student.name} | Email: {student.email} | Dept: {student.dept} ---"
                 )
@@ -61,11 +73,15 @@ def main() -> None:
         # ----- delete data from table -----
         target_delete = next((s for s in all_students if s.name == "SACHIN"), None)
         if target_delete:
-            target_delete.delete_data(conn)
+            target_delete.delete(conn)
 
         print("\n-> Final Data:")
         for s in Student.find_all(conn):
             print(f"ID: {s.id} | Name: {s.name} | Email: {s.email} | Dept: {s.dept}")
+
+        # ----- finding all data from table after CRUD operations -----
+        final_students = Student.find_all(conn)
+        print(f"\nTotal students after CRUD operation: {len(final_students)}")
 
     except Exception as e:
         print(f"Error during execution: {e}")

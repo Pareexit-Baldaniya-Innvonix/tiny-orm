@@ -65,11 +65,22 @@ class Student(BaseModel):
 
     # ----- finding all records -----
     @staticmethod
-    def find_all(conn: MySQLConnectionAbstract) -> list["Student"]:
+    def find_all(
+        conn: MySQLConnectionAbstract, criteria: Optional[dict] = None
+    ) -> list["Student"]:
         with conn.cursor() as cursor:
             try:
-                cursor.execute("SELECT id, name, email, dept FROM students")
+                query = "SELECT id, name, email, dept FROM students"
+                values = []
+
+                if criteria:
+                    conditions = [f"{key} = %s" for key in criteria.keys()]
+                    query += " WHERE " + " AND ".join(conditions)
+                    values = list(criteria.values())
+
+                cursor.execute(query, values)
                 rows = cursor.fetchall()
+
                 return [
                     Student(id=row[0], name=row[1], email=row[2], dept=row[3])
                     for row in rows
@@ -77,14 +88,20 @@ class Student(BaseModel):
 
             except mysql.connector.Error as error:
                 print(f"Error finding all data: {error}")
+                return []
 
     # ----- finding one record -----
     @staticmethod
-    def find_one(conn: MySQLConnectionAbstract, student_id: int) -> Optional["Student"]:
+    def find_one(
+        conn: MySQLConnectionAbstract, criteria: dict[str, any]
+    ) -> Optional["Student"]:
         with conn.cursor() as cursor:
             try:
-                sql = "SELECT id, name, email, dept FROM students WHERE id = %s"
-                cursor.execute(sql, (student_id,))
+                columns = " AND ".join([f"{key} = %s" for key in criteria.keys()])
+                values = tuple(criteria.values())
+
+                sql = f"SELECT id, name, email, dept FROM students WHERE {columns}"
+                cursor.execute(sql, values)
                 row = cursor.fetchone()
 
                 if row:
@@ -95,7 +112,7 @@ class Student(BaseModel):
                 print(f"Error finding specific data: {error}")
 
     # ----- update the data -----
-    def save_data(self, conn: MySQLConnectionAbstract) -> None:
+    def save(self, conn: MySQLConnectionAbstract) -> None:
         with conn.cursor() as cursor:
             try:
                 if self.id:
@@ -113,13 +130,13 @@ class Student(BaseModel):
                     action = "saved"
 
                 conn.commit()
-                print(f"\n--- Student {action} successfully. ---")
+                print(f"--- Student {action} successfully. ---")
 
             except mysql.connector.Error as error:
                 print(f"Error saving data: {error}")
 
     # ----- delete the data -----
-    def delete_data(self, conn: MySQLConnectionAbstract) -> None:
+    def delete(self, conn: MySQLConnectionAbstract) -> None:
         if not self.id:
             print("can't delete without student id")
             return
