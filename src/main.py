@@ -16,73 +16,63 @@ from utils import get_db_connection
 
 
 def main() -> None:
-    students: List[Student] = [
-        Student(name="ROHIT", email="rohit@example.com", dept="CE"),
-        Student(name="VIRAT", email="virat@example.com", dept="ME"),
-        Student(name="SACHIN", email="sachin@example.com", dept="IT"),
-        Student(name="ABHISHEK", email="abhishek@example.com", dept="EC"),
-    ]
-
     conn: Optional[MySQLConnection] = get_db_connection()
     if not conn:
         return
 
-    # ----- create table -----
     try:
+        # ----- create table -----
         Student.create_table(conn)
 
-    except Exception as e:
-        print(f"Error creating a table: {e}")
+        # ----- insert data into table -----
+        students: List[Student] = [
+            Student(name="ROHIT", email="rohit@example.com", dept="CE"),
+            Student(name="VIRAT", email="virat@example.com", dept="ME"),
+            Student(name="SACHIN", email="sachin@example.com", dept="IT"),
+            Student(name="ABHISHEK", email="abhishek@example.com", dept="EC"),
+        ]
+        for s in students:
+            s.save_data(conn)  # Using save_data instance method
 
-    # ----- insert data into table -----
-    try:
-        Student.insert_table(conn, students)
-
-        print("\n-> Initial Data:")
-        all_students: List[Student] = Student.read_table(conn)
+        # ----- finding all data from table -----
+        print(f"\n-> Current data in database table:")
+        all_students = Student.find_all(conn)
         for s in all_students:
-            print(f"ID: {s.id}, Name: {s.name}| Dept: {s.dept} | Email: {s.email} ")
+            print(f"ID: {s.id} | Name: {s.name} | Email: {s.email} | Dept: {s.dept}")
 
-    except Exception as e:
-        print(f"Error during inserting data: {e}")
-
-    # ----- update table data -----
-    try:
-        target_update = next((s for s in all_students if s.name == "ABHISHEK"), None)
-        if target_update:
-            # Create a new student object and keep the same ID
-            updated_info = Student(
-                id=target_update.id,
-                name="YUVRAJ",
-                email="yuvraj@example.com",
-                dept="EC",
-            )
-            Student.update_table(conn, updated_info)
+        # ----- update table data -----
+        target_id = next((s.id for s in all_students if s.name == "ABHISHEK"), None)
+        if target_id:
+            student = Student.find_one(conn, target_id)
+            if student:
+                student.name = "YUVRAJ"
+                student.email = "yuvraj@example.com"
+                student.dept = "AIML"
+                student.save_data(conn)
+                print(
+                    f"\n--- Updated student to: Name: {student.name} | Email: {student.email} | Dept: {student.dept} ---"
+                )
 
         print("\n-> Updated Data:")
-        all_students: List[Student] = Student.read_table(conn)
+        all_students = Student.find_all(conn)
         for s in all_students:
-            print(f"ID: {s.id}, Name: {s.name}| Dept: {s.dept} | Email: {s.email} ")
+            print(f"ID: {s.id} | Name: {s.name} | Email: {s.email} | Dept: {s.dept}")
 
-    except Exception as e:
-        print(f"Error updating table data: {e}")
-
-    # ----- delete data from table -----
-    try:
+        # ----- delete data from table -----
         target_delete = next((s for s in all_students if s.name == "SACHIN"), None)
         if target_delete:
-            Student.delete_table(conn, target_delete)
+            target_delete.delete_data(conn)
 
         print("\n-> Final Data:")
-        all_students: List[Student] = Student.read_table(conn)
-        for s in all_students:
-            print(f"ID: {s.id}, Name: {s.name}| Dept: {s.dept} | Email: {s.email} ")
+        for s in Student.find_all(conn):
+            print(f"ID: {s.id} | Name: {s.name} | Email: {s.email} | Dept: {s.dept}")
 
     except Exception as e:
-        print(f"Error deleting table data: {e}")
+        print(f"Error during execution: {e}")
 
-    conn.close()
-    print("\n--- Connection closed successfully. ---")
+    finally:
+        conn.close()
+        print("\n--- Connection closed successfully. ---")
 
 
 if __name__ == "__main__":
