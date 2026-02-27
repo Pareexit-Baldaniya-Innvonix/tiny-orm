@@ -152,7 +152,7 @@ class Teacher(BaseModel):
                 print(f"Error saving data: {error}")
 
     # ----- deleting record from table -----
-    def delete(self, conn: MySQLConnectionAbstract):
+    def delete(self, conn: MySQLConnectionAbstract) -> None:
         if not self.id:
             print(f"can't delete without teacher id.")
             return
