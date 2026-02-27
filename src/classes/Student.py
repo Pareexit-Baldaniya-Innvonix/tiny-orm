@@ -25,7 +25,8 @@ class Student(BaseModel):
                     dept CHAR(50))
                 """
                 )
-                print("\n--- Table created successfully. ---")
+                print("\n--- Table students created successfully ---\n")
+
             except mysql.connector.Error as error:
                 print(f"Error creating table: {error}")
 

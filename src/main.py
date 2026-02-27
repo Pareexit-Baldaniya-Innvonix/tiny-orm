@@ -12,6 +12,7 @@ from mysql.connector.connection import MySQLConnection
 
 # ----- local import -----
 from classes.Student import Student
+from classes.Teacher import Teacher
 from utils import get_db_connection
 
 
@@ -23,8 +24,10 @@ def main() -> None:
     try:
         # ----- create table -----
         Student.create_table(conn)
+        Teacher.create_table(conn)
 
         # ----- insert data into table -----
+        print("===== STUDENT OPERATIONS =====\n")
         students: List[Student] = [
             Student(name="ROHIT", email="rohit@example.com", dept="CE"),
             Student(name="VIRAT", email="virat@example.com", dept="ME"),
@@ -36,7 +39,7 @@ def main() -> None:
 
         # ----- finding all data from table -----
         all_students = Student.find_all(conn)
-        print(f"Total students: {len(all_students)}")
+        print(f"\nTotal students: {len(all_students)}")
 
         # ----- Filter by Department -----
         print("\n-> Searching students in the EC Department:")
@@ -61,9 +64,7 @@ def main() -> None:
                 student.email = "yuvraj@example.com"
                 student.dept = "AIML"
                 student.save(conn)
-                print(
-                    f"\n--- Updated student to: Name: {student.name} | Email: {student.email} | Dept: {student.dept} ---"
-                )
+                print(f"\n--- Updated ABHISHEK to YUVRAJ ---")
 
         print("\n-> Updated Data:")
         all_students = Student.find_all(conn)
@@ -81,7 +82,68 @@ def main() -> None:
 
         # ----- finding all data from table after CRUD operations -----
         final_students = Student.find_all(conn)
-        print(f"\nTotal students after CRUD operation: {len(final_students)}")
+        print(f"\nTotal students after CRUD operation: {len(final_students)}\n")
+
+        print("===== TEACHER OPERATIONS =====\n")
+        teachers: List[Teacher] = [
+            Teacher(name="John", email="john@example.com", subject="DSA"),
+            Teacher(name="Alice", email="alice@example.com", subject="Python"),
+            Teacher(name="David", email="david@example.com", subject="DBMS"),
+            Teacher(name="Willson", email="willson@example.com", subject="Maths"),
+        ]
+        for t in teachers:
+            t.save(conn)
+
+        # ----- finding all data from table -----
+        all_teachers = Teacher.find_all(conn)
+        print(f"\nTotal teachers: {len(all_teachers)}")
+
+        # ----- Filter by Subject -----
+        print("\n-> Searching teachers from subject maths:")
+        maths_teacher = Teacher.find_all(conn, criteria={"subject": "Maths"})
+        for t in maths_teacher:
+            print(f"ID: {t.id} | {t.name} ({t.email})")
+
+        # ----- Filter by Multiple Criteria (Name and Subject) -----
+        print("\n-> Searching for John teaches DSA:")
+        specific_teacher = Teacher.find_all(
+            conn, criteria={"name": "John", "subject": "DSA"}
+        )
+        for t in specific_teacher:
+            print(f"ID: {t.id} | Name: {t.name}")
+
+        # ----- update table data -----
+        target_id = next((t.id for t in all_teachers if t.name == "Willson"), None)
+        if target_id:
+            teacher = Teacher.find_one(conn, {"id": target_id})
+            if teacher:
+                teacher.name = "Steve"
+                teacher.email = "steve@example.com"
+                teacher.subject = "ML"
+                teacher.save(conn)
+                print(f"\n--- Updated Willson to Steve. ---")
+
+        print("\n-> Updated Data:")
+        all_teachers = Teacher.find_all(conn)
+        for t in all_teachers:
+            print(
+                f"ID: {t.id} | Name: {t.name} | Email: {t.email} | Subject: {t.subject}"
+            )
+
+        # ----- delete data from table -----
+        target_delete = next((t for t in all_teachers if t.name == "David"), None)
+        if target_delete:
+            target_delete.delete(conn)
+
+        print("\n-> Final Data:")
+        for t in Teacher.find_all(conn):
+            print(
+                f"ID: {t.id} | Name: {t.name} | Email: {t.email} | Subject: {t.subject}"
+            )
+
+        # ----- finding all data from table after CRUD operations -----
+        final_teachers = Teacher.find_all(conn)
+        print(f"\nTotal teachers after CRUD operation: {len(final_teachers)}")
 
     except Exception as e:
         print(f"Error during execution: {e}")
